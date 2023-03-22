@@ -11,6 +11,12 @@ This imposes two issues:
 * Increase lookup time when performing semantic search
 * increase storage requirements
 
+### How to
+
+Copy unzipped version of tiny-imagenet-200 into /dataset
+
+``python3 main.py``
+
 ### Dataset
 The project uses the ImageNet dataset which consists of --*-- images. The dataset consists of ------ images of which ----- is used as training set and ----- as test set.
 
@@ -22,6 +28,7 @@ The following libraries has been used in the project:
 * Pandas
 * Scikit-learn
 * TensorFlow
+* Keras
 
 ### References
 
