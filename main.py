@@ -110,6 +110,7 @@ decoded_data = scaler.inverse_transform(decoded_data)
 # Reconstruct the image using PCA
 reconstructed_data = pca.inverse_transform(decoded_data)
 reconstructed_image = reconstructed_data.reshape(original_image.shape)
+reconstructed_image = np.clip(reconstructed_image, 0, 1)
 
 # Compute the similarity measure (Mean Squared Error)
 mse = mean_squared_error(original_image.reshape(-1), reconstructed_image.reshape(-1))
