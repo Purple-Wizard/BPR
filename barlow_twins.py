@@ -24,7 +24,7 @@ NUM_OF_IMGS = 1000
 ENCODER_INPUT_SIZE = (128, 128)
 BARLOW_TWINS_INPUT_SIZE = (32, 32)
 INPUT_SHAPE = (32, 32, 3)
-IMG_DIRECTORY = 'bt_dataset'
+IMG_DIRECTORY = 'set3'
 ENCODER_PATH = 'models/encoder.h5'
 DECODER_PATH = 'models/decoder.h5'
 PROJECT_DIM = 2048
@@ -37,11 +37,11 @@ WEIGHT_DECAY = 5e-4
 
 
 def main():
-    ssl_ds, X_train, X_test = data_loader(image_directory = IMG_DIRECTORY, num_of_imgs = NUM_OF_IMGS, encoder_img_size = ENCODER_INPUT_SIZE, encoder_path = ENCODER_PATH, decoder_path = DECODER_PATH, barlow_twims_img_size = BARLOW_TWINS_INPUT_SIZE)
+    ssl_ds, X_train, test_ds = data_loader(image_directory = IMG_DIRECTORY, num_of_imgs = NUM_OF_IMGS, encoder_img_size = ENCODER_INPUT_SIZE, encoder_path = ENCODER_PATH, decoder_path = DECODER_PATH, barlow_twims_img_size = BARLOW_TWINS_INPUT_SIZE)
     barlow_twins, history = build_model(ssl_ds, X_train, INPUT_SHAPE)
     visulaize_loss(history)
-    test_and_visualize(X_test, barlow_twins)
     save_model(barlow_twins)
+    test_and_visualize(test_ds, barlow_twins)
     
 
 ## DATA LOADER
@@ -79,8 +79,13 @@ def data_loader(image_directory, num_of_imgs, encoder_img_size, encoder_path, de
 
     # We then zip both of these datasets.
     ssl_ds = tf.data.Dataset.zip((ssl_ds_one, ssl_ds_two))
+    
+    test_one = resize_images(original, barlow_twims_img_size)
+    test_two = resize_images(predicted, barlow_twims_img_size)
+    test_ds = tf.data.Dataset.from_tensor_slices((test_one, test_two))
+    test_ds = test_ds.batch(32).prefetch(AUTO)
         
-    return ssl_ds, X_train, X_test
+    return ssl_ds, X_train, test_ds
 
 
 # Loss Function

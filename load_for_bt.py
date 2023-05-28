@@ -12,7 +12,7 @@ from autoencoder import HashingLayer
 NUM_OF_IMGS = 100
 IMG_SIZE = (128, 128)
 BATCH_SIZE = 32
-IMG_DIRECTORY = 'bt_dataset'
+IMG_DIRECTORY = 'set2'
 ENCODER_PATH = 'models/encoder.h5'
 DECODER_PATH = 'models/decoder.h5'
 
