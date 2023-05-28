@@ -18,7 +18,7 @@ EPOCHS = 100
 BATCH_SIZE = 50
 IMG_SIZE = (128, 128)
 NUM_OF_IMGS = 2000
-DATASET_PATH = 'ae_dataset'
+DATASET_PATH = 'set1'
 
 
 def main():

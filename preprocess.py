@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 import random
 
 
-DATASET_PATH = "ae_dataset"
+DATASET_PATH = "set1"
 NUM_OF_IMGS = 100
 IMG_SIZE = (64, 64)
 
@@ -26,26 +26,23 @@ def load_images(path, num_images, img_size):
         np.array(Image.open(file))
         for file in tqdm(image_files, desc="Loading original images", unit="images")
     ]
-
-    resized = resize_images(original_images, img_size)
-
-    processsed = preprocess_images(resized)
     
-    original_train, original_val, original_test = split_data(resized)
-    processed_train = preprocess_images(original_train)
-    processed_val = preprocess_images(original_val)
-    processed_test = preprocess_images(original_test)
-
+    original_train, original_val, original_test = split_data(original_images)
+    processed_train = preprocess_images(original_train, img_size)
+    processed_val = preprocess_images(original_val, img_size)
+    processed_test = preprocess_images(original_test, img_size)
+    
+    processsed = preprocess_images(original_images, img_size)
     train_dataset = tf.data.Dataset.from_tensor_slices((np.array(processed_train), np.array(original_train)))
     val_dataset = tf.data.Dataset.from_tensor_slices((np.array(processed_val), np.array(original_val)))
     test_dataset = tf.data.Dataset.from_tensor_slices((np.array(processed_test), np.array(original_test)))
-    processed_dataset = tf.data.Dataset.from_tensor_slices((np.array(processsed), np.array((resized))))
+    processed_dataset = tf.data.Dataset.from_tensor_slices((np.array(processsed), np.array((original_images))))
 
     return {
         'train': train_dataset,
         'val': val_dataset,
         'test': test_dataset,
-        'original' : resized,
+        'original' : original_images,
         'processed': processed_dataset
     }
 
@@ -97,10 +94,11 @@ def apply_salt_pepper_noise(image, salt_prob, pepper_prob):
     return noisy_image, salt_indices, pepper_indices
 
 
-def preprocess_images(images):
+def preprocess_images(images, img_size):
     processed_images = []
+    resized = resize_images(images, img_size)
 
-    for i, img in enumerate(tqdm(images, desc="Preprocessing images", unit="images")):
+    for i, img in enumerate(tqdm(resized, desc="Preprocessing images", unit="images")):
 
         salt_pepper, salt_indices, pepper_indices = apply_salt_pepper_noise(img.copy(), 0.01, 0.01)
         
