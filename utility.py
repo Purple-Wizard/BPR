@@ -9,18 +9,24 @@ from sklearn.model_selection import train_test_split
 import random
 
 
-def load_dataset(path: str, num_images: int, img_size: tuple = (128, 128), peek: bool = False, compression: bool = False):
+def load_dataset(path: str, num_images: int = 0, img_size: tuple = (128, 128), peek: bool = False, compression: bool = False):
     image_files = []
 
     for root, _, files in os.walk(path):
         image_files.extend([os.path.join(root, file) for file in files if file.lower().endswith('.png')])
 
-    image_files = image_files[:num_images]
+    image_files = image_files[:num_images] if num_images != 0 else image_files[:len(image_files)]
     
-    original_images = [
-        np.array(Image.open(file))
-        for file in tqdm(image_files, desc='Loading original images', unit='images')
-    ]
+    original_images = []
+
+    for file in tqdm(image_files, desc="Loading original images", unit="images"):
+        img = Image.open(file)
+        # Check if image has more than 3 channels (e.g. it's an RGBA image)
+        if len(img.split()) > 3:
+            # Convert to RGB
+            r, g, b, _ = img.split()
+            img = Image.merge('RGB', (r, g, b))
+        original_images.append(np.array(img))
 
     resized = resize_images(original_images, img_size)
 

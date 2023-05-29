@@ -97,37 +97,39 @@ def parse_arguments():
 def conv_block(x, filters, strides, padding='same'):
     x = Conv2D(filters, (3,3), strides=strides, padding=padding)(x)
     x = Activation('relu')(x)
+
     return x
 
 def conv_transpose_block(x, filters, strides, padding='same'):
     x = Conv2DTranspose(filters, (3,3), strides=strides, padding=padding)(x)
     x = Activation('relu')(x)
+
     return x
 
 def create_encoder(input_shape=(128, 128, 3)):
     input_img = Input(shape=input_shape)
     a1 = conv_block(input_img, 32, 1)
-    a3 = conv_block(a1, 64, 2)
-    a5 = conv_block(a3, 128, 1)
-    a7 = conv_block(a5, 128, 1)
-    skip_0 = Add()([a7, a5])
-    a9 = conv_block(skip_0, 64, 1)
-    a11 = conv_block(a9, 3, 1)
-    a12 = HashingLayer(2)(Model(input_img, a11).output)
+    a2 = conv_block(a1, 64, 2)
+    a3 = conv_block(a2, 128, 1)
+    a4 = conv_block(a3, 128, 1)
+    skip_1 = Add()([a4, a3])
+    a5 = conv_block(skip_1, 64, 1)
+    a6 = conv_block(a5, 3, 1)
+    a7 = HashingLayer(2)(Model(input_img, a6).output)
     
-    return tf.keras.Model(input_img, a12)
+    return tf.keras.Model(input_img, a7)
 
 def create_decoder(hashing_model):
     input_shape = hashing_model.output.shape[1:]
     decoder_input = Input(shape=input_shape)
-    a13 = conv_transpose_block(decoder_input, 32, 1)
-    a15 = conv_transpose_block(a13, 128, 2)
-    a17 = conv_transpose_block(a15, 64, 1)
-    a19 = conv_transpose_block(a17, 64, 1)
-    skip_1 = Add()([a17, a19])
-    a21 = conv_transpose_block(skip_1, 3, 1)
+    a8 = conv_transpose_block(decoder_input, 32, 1)
+    a9 = conv_transpose_block(a8, 128, 2)
+    a10 = conv_transpose_block(a9, 64, 1)
+    a11 = conv_transpose_block(a10, 64, 1)
+    skip_2 = Add()([a10, a11])
+    a12 = conv_transpose_block(skip_2, 3, 1)
 
-    return tf.keras.Model(decoder_input, a21)
+    return tf.keras.Model(decoder_input, a12)
 
 def predict_and_visualize(number_of_samples: int, history, test_data, decoded, encoded):
     test_iter = next(iter(test_data))

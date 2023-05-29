@@ -1,10 +1,10 @@
-from db_connection import WeaviateConnection
 from hashing_layer import HashingLayer
 from utility import load_dataset
 
 import argparse
 from keras.models import load_model
 import numpy as np
+import os
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -12,7 +12,7 @@ warnings.filterwarnings('ignore')
 def main():
     args = parse_arguments()
 
-    images = load_dataset(args.data_to_compress, args.n_images, compression=True)
+    images = load_dataset(args.data_to_compress, compression=True)
 
     try:
         encoder = load_model(args.encoder_model, custom_objects={'HashingLayer': HashingLayer})
@@ -22,32 +22,22 @@ def main():
 
     compressed_img = encoder.predict(images)
 
-    if (args.db):
-        save_to_db(compressed_img, args.name_images, args.db)
+    if (args.save_local):
+        save_locally(compressed_img, args.name_images)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='This is the compression script for 128x128 images and storage')
-    parser.add_argument('--data_to_compress', type=str, help='Path to dataset (.png)', default='dataset/set2')
-    parser.add_argument('--name_images', type=str, help='Path to dataset (.png)', default='sample')
-    parser.add_argument('--encoder_model', type=str, help='Size of the dataset to use (25.000 pcs recommended)', default='models/encoder.h5')
-    parser.add_argument('--db', type=str, help='Number of epochs to run', default='http://localhost:8080')
-    parser.add_argument('--save_local', type=bool, help='Peek into the preprocessing before the training', default=False)
-    parser.add_argument('--console_out', type=bool, help='Number of samples to show after the validation', default=True)
-    parser.add_argument('--n_images', type=int, help='Saves the trained models as .h5 (encoder, decoder)', default=1)
+    parser.add_argument('--data_to_compress', type=str, help='Path to images folder (.png)', default='test/gmaps_test')
+    parser.add_argument('--name_images', type=str, help='Name of the compressed file (.npy)', default='sample')
+    parser.add_argument('--encoder_model', type=str, help='Path to encoder model', default='models/encoder.h5')
+    parser.add_argument('--save_local', type=bool, help='If the compression should be saved locally', default=True)
+    parser.add_argument('--console_out', type=int, help='Number of samples to show after the validation', default=True)
 
     return parser.parse_args()
 
-def save_to_db(images, name, connection):
-    client = WeaviateConnection(connection)
-
-    client.add_image(name, images)
-
-def console_out():
-    pass
-
-def save_locally():
-    pass
-
+def save_locally(images, name):
+    os.makedirs(f'compressed', exist_ok=True)
+    np.save(f'compressed/{name}.npy', images)
 
 if __name__ == '__main__':
     main()

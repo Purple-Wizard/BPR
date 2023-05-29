@@ -8,4 +8,5 @@ build/
 *.log
 .vscode/
 /dataset
+/test
 .DS_Store
