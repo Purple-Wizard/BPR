@@ -22,7 +22,7 @@ def load_and_predict_images(image_directory, num_of_imgs, img_size, encoder_path
     data = load_dataset(image_directory, num_of_imgs, img_size)
     
     processed_data = data['processed']
-    original_data = data['original']
+    original_data = data['preprocessed']
     processed_data_arr = processed_data.batch(BATCH_SIZE)
     
     # Load the model

@@ -4,6 +4,22 @@ from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import tensorflow as tf
+import warnings
+
+gpus = tf.config.experimental.list_physical_devices('GPU')
+
+if gpus:
+    try:
+        # Currently, memory growth needs to be the same across GPUs
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+    except RuntimeError as e:
+        # Memory growth must be set before GPUs have been initialized
+        print(e)
+
+warnings.filterwarnings('ignore')
+
 
 def main():
     args = parse_arguments()

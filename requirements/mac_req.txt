@@ -100,6 +100,7 @@ tifffile==2023.3.21
 toml==0.10.2
 torch==2.0.0
 traitlets==5.9.0
+tqdm
 typeguard==2.13.3
 typing_extensions==4.5.0
 update==0.0.1

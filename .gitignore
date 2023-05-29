@@ -9,4 +9,6 @@ build/
 .vscode/
 /dataset
 /test
+/compressed
+/decompressed
 .DS_Store

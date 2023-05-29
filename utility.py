@@ -7,6 +7,20 @@ import tensorflow as tf
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 import random
+import warnings
+
+gpus = tf.config.experimental.list_physical_devices('GPU')
+
+if gpus:
+    try:
+        # Currently, memory growth needs to be the same across GPUs
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+    except RuntimeError as e:
+        # Memory growth must be set before GPUs have been initialized
+        print(e)
+
+warnings.filterwarnings('ignore')
 
 
 def load_dataset(path: str, num_images: int = 0, img_size: tuple = (128, 128), peek: bool = False, compression: bool = False):
@@ -47,7 +61,7 @@ def load_dataset(path: str, num_images: int = 0, img_size: tuple = (128, 128), p
         'train': train_dataset,
         'val': val_dataset,
         'test': test_dataset,
-        'original': resized,
+        'preprocessed': processed_images,
         'processed': processed_dataset
     }
 
