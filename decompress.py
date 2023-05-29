@@ -21,15 +21,15 @@ def main():
     if (args.save_local):
         save_images(decompressed_images, args.images_folder_name)
 
-    if (args.console_out):
-        show_images(decompressed_images, args.console_out)
+    if (args.show_images):
+        show_images(decompressed_images, args.show_images)
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description='This is the decompression script for 128x128 images and local storage')
     parser.add_argument('--decoder_model', type=str, help='Path to decoder model', default='models/decoder.h5')
     parser.add_argument('--path_to_compressed', type=str, help='Path to compressed data (.npy)', default='test/compressed/test.npy')
-    parser.add_argument('--console_out', type=int, help='Number of samples to show after the decompression', default=10)
-    parser.add_argument('--save_local', type=bool, help='If the decompressed images should be saved', default=False)
+    parser.add_argument('--show_images', type=int, help='Number of samples to show after the decompression', default=0)
+    parser.add_argument('--save_local', type=bool, help='If the decompressed images should be saved', default=True)
     parser.add_argument('--images_folder_name', type=str, help='Name of the output folder', default='sample')
 
     return parser.parse_args()

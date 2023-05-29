@@ -31,12 +31,11 @@ def parse_arguments():
     parser.add_argument('--name_images', type=str, help='Name of the compressed file (.npy)', default='sample')
     parser.add_argument('--encoder_model', type=str, help='Path to encoder model', default='models/encoder.h5')
     parser.add_argument('--save_local', type=bool, help='If the compression should be saved locally', default=True)
-    parser.add_argument('--console_out', type=int, help='Number of samples to show after the validation', default=True)
 
     return parser.parse_args()
 
 def save_locally(images, name):
-    os.makedirs(f'compressed', exist_ok=True)
+    os.makedirs('compressed', exist_ok=True)
     np.save(f'compressed/{name}.npy', images)
 
 if __name__ == '__main__':

@@ -39,3 +39,9 @@ Airflow docs: https://airflow.apache.org/docs/apache-airflow/stable/
 Nifi: https://nifi.apache.org/
 
 Ceph docs: https://docs.ceph.com/en/quincy/
+
+
+### Setup
+
+Create virtual environment:
+

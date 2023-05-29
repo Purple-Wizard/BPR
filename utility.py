@@ -67,7 +67,7 @@ def display_images(images_lists, titles=['Original']):
     fig, axs = plt.subplots(3, 3, figsize=(15, 15))
 
     for i in range(len(images_lists)):
-        if (i > 3):
+        if (i > 2):
             break
 
         for j in range(len(images_lists[0])):
