@@ -15,7 +15,7 @@ from keras.regularizers import l2
 from load_for_bt import load_and_predict_images
 from tensorflow.keras.layers.experimental.preprocessing import Rescaling
 from PIL import Image
-from preprocess import resize_images
+from utility import resize_images
 
 
 ## HYPERPARAMETER AND CONSTANTS
@@ -24,7 +24,7 @@ NUM_OF_IMGS = 1000
 ENCODER_INPUT_SIZE = (128, 128)
 BARLOW_TWINS_INPUT_SIZE = (32, 32)
 INPUT_SHAPE = (32, 32, 3)
-IMG_DIRECTORY = 'set3'
+IMG_DIRECTORY = 'dataset/set3'
 ENCODER_PATH = 'models/encoder.h5'
 DECODER_PATH = 'models/decoder.h5'
 PROJECT_DIM = 2048
@@ -42,7 +42,6 @@ def main():
     visulaize_loss(history)
     save_model(barlow_twins)
     test_and_visualize(test_ds, barlow_twins)
-    
 
 ## DATA LOADER
 def data_loader(image_directory, num_of_imgs, encoder_img_size, encoder_path, decoder_path, barlow_twims_img_size):
@@ -55,7 +54,7 @@ def data_loader(image_directory, num_of_imgs, encoder_img_size, encoder_path, de
     dataset_two = resize_images(predicted, barlow_twims_img_size)
     
     # Ratio of samples for training
-    train_ratio = 0.8 
+    train_ratio = 0.8
     
     # Determine the number of samples for training
     num_train_samples = int(num_of_imgs * train_ratio)
@@ -502,4 +501,4 @@ def save_model(barlow_twins):
 
 
 if __name__ == '__main__':
-  main()
+   main()

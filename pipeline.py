@@ -1,9 +1,9 @@
-from preprocess import load_images
+from utility import load_dataset
 from load_for_bt import load_and_predict_images
 import matplotlib.pyplot as plt
 from keras.models import load_model
 import numpy as np
-from preprocess import resize_images
+from utility import resize_images
 import tensorflow as tf
 
 
@@ -21,7 +21,7 @@ AUTO = tf.data.AUTOTUNE
 
 # Load images for encoder
 print('\nLoad and Preprocess... \n____________________________________________________________')
-test_images = load_images(DATASET_PATH, NUM_OF_IMGS, ENCODER_IMG_SIZE)
+test_images = load_dataset(DATASET_PATH, NUM_OF_IMGS, ENCODER_IMG_SIZE)
 
 
 # Predict with Autoencoder

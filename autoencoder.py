@@ -1,74 +1,108 @@
-# Imports
+from hashing_layer import HashingLayer
+from utility import load_dataset
+
 import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
 from keras.models import Model
-import numpy as np
-from tensorflow.keras.layers import Input, Add, Layer
-from tensorflow.keras.models import Model
+from keras.layers import Input, Conv2D, Conv2DTranspose, Add, Activation
+from keras.models import Model
+from keras.optimizers import Adam
 from keras.callbacks import ReduceLROnPlateau, EarlyStopping
 from skimage.metrics import structural_similarity
-from preprocess import load_images
+from tqdm import tqdm
 import random
+import numpy as np
+import matplotlib.pyplot as plt
+import argparse
+import warnings
+warnings.filterwarnings('ignore')
 
 
-# Constants
+def train():
+    args = parse_arguments()
 
-EPOCHS = 100
-BATCH_SIZE = 50
-IMG_SIZE = (128, 128)
-NUM_OF_IMGS = 2000
-DATASET_PATH = 'set1'
+    DATASET_PATH = args.path_to_dataset
+    DATASET_SIZE = args.dataset_size
+    N_EPOCH = args.n_epoch
 
+    data = load_dataset(DATASET_PATH, DATASET_SIZE, img_size=(128, 128), peek=args.show_preprocess)
 
-def main():
-    data = load_images(DATASET_PATH, NUM_OF_IMGS, IMG_SIZE)
-    
-    train_data_arr = data['train']
-    test_data_arr = data['test']
-    validation_data_arr = data['val']
-    
-    train_data_arr = train_data_arr.batch(BATCH_SIZE)
-    test_data_arr = test_data_arr.batch(BATCH_SIZE)
-    validation_data_arr = validation_data_arr.batch(BATCH_SIZE)
+    train_data_arr = data['train'].batch(32)
+    test_data_arr = data['test'].batch(32)
+    validation_data_arr = data['val'].batch(32)
 
-    encoder, decoder, model_history = build_model(training_data = train_data_arr, epochs = EPOCHS, batch_size = BATCH_SIZE, validation_data = validation_data_arr)
-    visualize_loss(model_history)
-    test_and_visualize(encoder = encoder, decoder = decoder, test_data = test_data_arr)
-    save_model(encoder = encoder, decoder = decoder)
+    encoder = create_encoder()
+    decoder = create_decoder(encoder)
 
+    model = Model(encoder.input, decoder(encoder.output))
+
+    lr_scheduler = ReduceLROnPlateau(
+                        monitor='val_loss',
+                        factor=0.1,
+                        patience=5,
+                        verbose=1,
+                        mode='min',
+                        min_delta=0.001,
+                        cooldown=3,
+                        min_lr=1e-6
+                    )
+    early_stopping = EarlyStopping(
+                        monitor="val_loss",
+                        min_delta=0.0001,
+                        patience=12,
+                        verbose=1,
+                        mode='min',
+                        restore_best_weights=True
+                    )
+
+    encoder.summary()
+    decoder.summary()
+
+    model.compile(optimizer=Adam(learning_rate=1e-3), loss='mae')
+    history_comp = model.fit(
+        train_data_arr,
+        epochs=N_EPOCH,
+        validation_split=0.2,
+        batch_size=32,
+        validation_data=(validation_data_arr),
+        verbose=1,
+        callbacks=[lr_scheduler, early_stopping]
+    )
+
+    if (args.save_models):
+        encoder.save('models/encoder.h5')
+        decoder.save('models/decoder.h5')
+
+    encoded = encoder.predict(test_data_arr)
+    decoded = decoder.predict(encoded)
+
+    predict_and_visualize(
+        number_of_samples=args.n_visualize_result,
+        history=history_comp,
+        test_data=test_data_arr,
+        decoded=decoded,
+        encoded=encoded
+    )
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='This is the training and validating script for Hashing Autoencoder')
+    parser.add_argument('--path_to_dataset', type=str, help='Path to dataset (.png)', default='dataset/set1')
+    parser.add_argument('--dataset_size', type=int, help='Size of the dataset to use (25.000 pcs recommended)', default=25000)
+    parser.add_argument('--n_epoch', type=int, help='Number of epochs to run', default=100)
+    parser.add_argument('--show_preprocess', type=bool, help='Peek into the preprocessing before the training', default=True)
+    parser.add_argument('--n_visualize_result', type=int, help='Number of samples to show after the validation', default=10)
+    parser.add_argument('--save_models', type=bool, help='Saves the trained models as .h5 (encoder, decoder)', default=True)
+
+    return parser.parse_args()
 
 def conv_block(x, filters, strides, padding='same'):
-    x = tf.keras.layers.Conv2D(filters, (3,3), strides=strides, padding=padding)(x)
-    x = tf.keras.layers.Activation('relu')(x)
+    x = Conv2D(filters, (3,3), strides=strides, padding=padding)(x)
+    x = Activation('relu')(x)
     return x
-
 
 def conv_transpose_block(x, filters, strides, padding='same'):
-    x = tf.keras.layers.Conv2DTranspose(filters, (3,3), strides=strides, padding=padding)(x)
-    x = tf.keras.layers.Activation('relu')(x)
+    x = Conv2DTranspose(filters, (3,3), strides=strides, padding=padding)(x)
+    x = Activation('relu')(x)
     return x
-
-
-class HashingLayer(Layer):
-    def __init__(self, output_channels, **kwargs):
-        super(HashingLayer, self).__init__(**kwargs)
-        self.output_channels = output_channels
-
-    def build(self, input_shape):
-        self.conv = tf.keras.layers.Conv2D(self.output_channels, (1, 1), strides=(1, 1), padding='same')
-        super(HashingLayer, self).build(input_shape)
-
-    def call(self, x):
-        return self.conv(x)
-
-    def compute_output_shape(self, input_shape):
-        return (input_shape[0], input_shape[1], input_shape[2], self.output_channels)
-
-    def get_config(self):
-        base_config = super().get_config()
-        return {**base_config, "output_channels": self.output_channels}
-
 
 def create_encoder(input_shape=(128, 128, 3)):
     input_img = Input(shape=input_shape)
@@ -83,7 +117,6 @@ def create_encoder(input_shape=(128, 128, 3)):
     
     return tf.keras.Model(input_img, a12)
 
-
 def create_decoder(hashing_model):
     input_shape = hashing_model.output.shape[1:]
     decoder_input = Input(shape=input_shape)
@@ -96,95 +129,50 @@ def create_decoder(hashing_model):
 
     return tf.keras.Model(decoder_input, a21)
 
-
-def build_model(training_data, epochs, batch_size,validation_data):
-    encoder = create_encoder()
-    decoder = create_decoder(encoder)
-
-    lr_scheduler = ReduceLROnPlateau(
-                        monitor='val_loss',
-                        factor=0.1,
-                        patience=5,
-                        verbose=1,
-                        mode='min',
-                        min_delta=0.001,
-                        cooldown=3,
-                        min_lr=1e-6
-        )
-    
-    early_stopping = EarlyStopping(
-                        monitor="val_loss",
-                        min_delta=0.0001,
-                        patience=10,
-                        verbose=1,
-                        mode='min',
-                        restore_best_weights=True
-        )
-
-    model = Model(encoder.input, decoder(encoder.output))
-
-    print("Encoder...\n_________________________________________________________________")
-    print(encoder.summary())
-    print("Decoder...\n_________________________________________________________________")
-    print(decoder.summary())
-
-    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3), loss='mae')
-    history_comp = model.fit(
-                        training_data, 
-                        epochs=epochs, 
-                        batch_size=batch_size, 
-                        validation_data=validation_data, 
-                        verbose=1, 
-                        callbacks=[lr_scheduler, early_stopping])
-
-    return encoder, decoder, history_comp
-
-
-def visualize_loss(model_history):
+def predict_and_visualize(number_of_samples: int, history, test_data, decoded, encoded):
+    test_iter = next(iter(test_data))
+    random_indices = random.sample(range(test_iter[0].shape[0]), number_of_samples)
     plt.figure(figsize=(21, 7))
-    plt.plot(model_history.history['loss'], label='Training Loss')
-    plt.plot(model_history.history['val_loss'], label='Validation Loss')
-    plt.xlabel('Epochs')
+    ax = plt.subplot(3, 1, 1)
+    plt.plot(history.history['loss'], label='Training Loss')
+    plt.plot(history.history['val_loss'], label='Validation Loss')
+    plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.legend()
-    
-    plt.show()
-    
-    
-def test_and_visualize(encoder, decoder, test_data):
-    encoded = encoder.predict(test_data)
-    decoded = decoder.predict(encoded)
-    
-    n = 10
-    test_iter = next(iter(test_data))
-    random_indices = random.sample(range(test_iter[0].shape[0]), n)
-    plt.figure(figsize=(21, 7))
-    
-    for i, idx in enumerate(random_indices):
-        ax = plt.subplot(3, n, i + n + 1)
-        plt.imshow(test_iter[0][idx])
-        ssims = [structural_similarity(test_iter[1][idx].numpy().reshape(128, 128, 3), decoded[idx].reshape(128, 128, 3), data_range=1, multichannel=True, win_size=3) for i in range(len(decoded))]
+
+    for i, idx in enumerate(tqdm(random_indices, desc='Predicting and visualising results', unit='samples')):
+        ax = plt.subplot(3, number_of_samples, i + number_of_samples + 1)
+        test_sample = test_iter[0][idx]
+        encoded_sample = encoded[idx]
+        decoded_sample = decoded[idx]
+        original_sample = test_iter[1][idx].numpy()
+
+        plt.imshow(test_sample)
+        ssims = [structural_similarity(
+            original_sample.reshape(128, 128, 3),
+            decoded_sample.reshape(128, 128, 3),
+            data_range=1,
+            multichannel=True,
+            win_size=3
+        ) for i in range(len(decoded))]
+
         plt.gray()
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
 
-        ax = plt.subplot(3, n, i + 1 + 2 * n)
-        plt.imshow(decoded[idx])
+        ax = plt.subplot(3, number_of_samples, i + 1 + 2 * number_of_samples)
+        plt.imshow(decoded_sample)
         plt.title(f'Avg SSIM: {np.mean(ssims):.4f}', fontsize=10)
         plt.gray()
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
-        og_size = test_iter[0][idx].numpy().size * test_iter[0][idx].numpy().itemsize
-        enc_size = encoded[idx].size * encoded[idx].itemsize
-        dec_size = decoded[idx].size * decoded[idx].itemsize
-        print(f'Original: {og_size} | Encoded: {enc_size} bytes | Decoded: {dec_size} bytes')
+        og_size = test_sample.numpy().size * test_sample.numpy().itemsize
+        enc_size = encoded_sample.size * encoded_sample.itemsize
+        dec_size = decoded_sample.size * decoded_sample.itemsize
+        print(f'Original: {og_size} bytes | Encoded: {enc_size} bytes | Decoded: {dec_size} bytes')
 
     plt.show()
 
 
-def save_model(encoder, decoder):
-    encoder.save('models/encoder.h5')
-    decoder.save('models/decoder.h5')
-
 if __name__ == '__main__':
-  main()
+    train()

@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-from preprocess import load_images
+from utility import load_dataset
 from skimage.metrics import structural_similarity
 from autoencoder import HashingLayer
 
@@ -19,7 +19,7 @@ DECODER_PATH = 'models/decoder.h5'
 
 def load_and_predict_images(image_directory, num_of_imgs, img_size, encoder_path, decoder_path):
     # Load the images
-    data = load_images(image_directory, num_of_imgs, img_size)
+    data = load_dataset(image_directory, num_of_imgs, img_size)
     
     processed_data = data['processed']
     original_data = data['original']
