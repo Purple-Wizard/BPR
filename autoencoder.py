@@ -99,7 +99,7 @@ def train():
 def parse_arguments():
     parser = argparse.ArgumentParser(description='This is the training and validating script for Hashing Autoencoder')
     parser.add_argument('--path_to_dataset', type=str, help='Path to dataset (.png)', default='dataset/set1')
-    parser.add_argument('--dataset_size', type=int, help='Size of the dataset to use (25.000 pcs recommended)', default=25000)
+    parser.add_argument('--dataset_size', type=int, help='Size of the dataset to use (25.000 pcs recommended at least for best result)', default=25000)
     parser.add_argument('--n_epoch', type=int, help='Number of epochs to run', default=100)
     parser.add_argument('--show_preprocess', type=bool, help='Peek into the preprocessing before the training', default=True)
     parser.add_argument('--n_visualize_result', type=int, help='Number of samples to show after the validation', default=10)

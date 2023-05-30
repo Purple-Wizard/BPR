@@ -18,27 +18,13 @@ Copy unzipped version of tiny-imagenet-200 into /dataset
 ``python3 main.py``
 
 ### Dataset
-The project uses the ImageNet dataset which consists of --*-- images. The dataset consists of ------ images of which ----- is used as training set and ----- as test set.
-
-### Usages
-
-The following libraries has been used in the project:
-
-* NumPy
-* Pandas
-* Scikit-learn
-* TensorFlow
-* Keras
+The project uses the WorldStrat dataset which consists of 39 images. The dataset consists of ------ images of which ----- is used as training set and ----- as test set. https://www.kaggle.com/datasets/jucor1/worldstrat
 
 ### References
 
 Hashing with binary Autoencoders: https://arxiv.org/pdf/1501.00756.pdf
 
-Airflow docs: https://airflow.apache.org/docs/apache-airflow/stable/
-
-Nifi: https://nifi.apache.org/
-
-Ceph docs: https://docs.ceph.com/en/quincy/
+Barlow Twins: https://github.com/sayakpaul/Barlow-Twins-TF
 
 
 ### Setup
