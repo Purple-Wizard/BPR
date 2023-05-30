@@ -68,7 +68,7 @@ virtualenv environment_name```
 
 5. (Optional) Train the model:
 
-``train.sh```
+``train.sh``
 
 6. (Optional) Test model output:
 
