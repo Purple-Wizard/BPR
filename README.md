@@ -34,7 +34,9 @@ For image compression and decompression functionality.
 
 1. Build container:
 
-``docker build -t image-compression .``
+```
+docker build -t image-compression .
+```
 
 2. Compress:
 
@@ -52,7 +54,9 @@ docker run -d -v /Path/to/project/folder:/app image-compression decompress --dec
 
 1. Open the terminal and install virtual environment:
 
-``pip3 install virtualenv``
+```
+pip3 install virtualenv
+```
 
 2. Create virtual environment:
 
@@ -63,23 +67,40 @@ virtualenv environment_name
 
 3. Activate virtual environment:
 
-``.\env_name\Scripts\activate`` for Windows
-``source env_name/bin/activate`` for Linux
+for Windows:
+```
+.\env_name\Scripts\activate
+```
+for Linux:
+```
+source env_name/bin/activate
+```
 
-``deactivate`` Stopping the virtual environment
+_Stopping the virtual environment_:
+```
+deactivate
+```
 
 4. Install the dependecies:
 
-``setup.sh``
+```
+setup.sh
+```
 
 5. (Optional) Train the model:
 
-``train.sh``
+```
+train.sh
+```
 
 6. (Optional) Test model output:
 
-``pipeline.py``
-``barlow_twins.py``
+```
+pipeline.py
+```
+```
+barlow_twins.py
+```
 
 7. Compress and decompress files:
 
